@@ -6,12 +6,13 @@
   register: adminpasswordfile
   no_log: true
   when: jenkins_admin_password_file != ""
-  tags: ['skip_ansible_lint']
+  tags: ['skip_ansible_lint', 'jenkins_plugins']
 
 - name: Set Jenkins admin password fact.
   set_fact:
     jenkins_admin_password: "{{ adminpasswordfile['stdout'] | default(jenkins_admin_password) }}"
   no_log: true
+  tags: jenkins_plugins
 
 # Update Jenkins so that plugin updates don't fail.
 - name: Create Jenkins updates directory.
@@ -20,6 +21,7 @@
     state: directory
     owner: jenkins
     group: jenkins
+  tags: jenkins_plugins
 
 - name: Download current plugin updates from Jenkins update site.
   get_url:
@@ -33,11 +35,13 @@
   until: get_result is success
   retries: 3
   delay: 2
+  tags: jenkins_plugins
 
 - name: Remove first and last line from json file.
   replace:
     path: "{{ jenkins_home }}/updates/default.json"
     regexp: "1d;$d"
+  tags: jenkins_plugins
 
 - name: Install Jenkins plugins using password.
   jenkins_plugin:
@@ -59,3 +63,4 @@
   until: plugin_result is success
   retries: 3
   delay: 2
+  tags: jenkins_plugins
