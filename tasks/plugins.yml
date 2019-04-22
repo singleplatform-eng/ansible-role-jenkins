@@ -6,11 +6,13 @@
   register: adminpasswordfile
   no_log: True
   when: jenkins_admin_password_file != ""
+  tags: jenkins_plugins
 
 - name: Set Jenkins admin password fact.
   set_fact:
     jenkins_admin_password: "{{ adminpasswordfile['stdout'] | default(jenkins_admin_password) }}"
   no_log: True
+  tags: jenkins_plugins
 
 - name: Get Jenkins admin token from file.
   slurp:
@@ -18,11 +20,13 @@
   register: admintokenfile
   no_log: True
   when: jenkins_admin_token_file != ""
+  tags: jenkins_plugins
 
 - name: Set Jenkins admin token fact.
   set_fact:
     jenkins_admin_token: "{{ admintokenfile['stdout'] | default(jenkins_admin_token) }}"
   no_log: True
+  tags: jenkins_plugins
 
 # Update Jenkins so that plugin updates don't fail.
 - name: Create update directory
@@ -31,6 +35,7 @@
     state: directory
     owner: jenkins
     group: jenkins
+  tags: jenkins_plugins
 
 - name: Download current plugin updates from Jenkins update site
   get_url:
@@ -39,11 +44,13 @@
     owner: jenkins
     group: jenkins
     mode: 0440
+  tags: jenkins_plugins
 
 - name: Remove first and last line from json file
   replace:
     path: "{{ jenkins_home }}/updates/default.json"
     regexp: "1d;$d"
+  tags: jenkins_plugins
 
 - name: Install Jenkins plugins using password.
   jenkins_plugin:
@@ -59,6 +66,7 @@
   with_items: "{{ jenkins_plugins }}"
   when: jenkins_admin_password != ""
   notify: restart jenkins
+  tags: jenkins_plugins
 
 - name: Install Jenkins plugins using token.
   jenkins_plugin:
@@ -70,3 +78,4 @@
   with_items: "{{ jenkins_plugins }}"
   when: jenkins_admin_token != ""
   notify: restart jenkins
+  tags: jenkins_plugins

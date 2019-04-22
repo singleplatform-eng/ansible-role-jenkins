@@ -58,3 +58,4 @@
 
 # Update Jenkins and install configured plugins.
 - include_tasks: plugins.yml
+  tags: jenkins_plugins
